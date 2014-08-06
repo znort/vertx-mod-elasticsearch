@@ -361,3 +361,81 @@ An example reply message for the scroll above would be:
     }
 }
 ```
+
+
+### Raw
+
+Send a raw query.
+
+
+Send a json message to the event bus with the following structure:
+
+```json
+{
+    "action": "raw",
+    "_index": <_index>,
+    "_type": <_type>,
+    "query": <query>
+}
+```
+
+* `index` - a string index to be searched.  This is required.
+* `type` - a string type to be searched.  This is required.
+* `query` - a json object, see the elastic search documentation for details (http://www.elasticsearch.org/guide/reference/query-dsl/).  This is required.
+
+
+An example message would be:
+
+```json
+{
+    "action": "raw",
+    "_index": "twitter",
+    "_type": "tweet",
+    "query": {
+ 	   "term" : { "user" : "christo" }
+	}
+}
+```
+
+The event bus replies with a json message with a status `"ok"` or `"error"` along with the standard elastic search json scroll response.  See the documentation for details.
+
+An example reply message for the scroll above would be:
+
+```json
+{
+    "status": "ok",
+    "took" : 3,
+    "timed_out" : false,
+    "_shards" : {
+        "total" : 5,
+        "successful" : 5,
+        "failed" : 0
+    },
+    "hits" : {
+        "total" : 2,
+        "max_score" : 0.19178301,
+        "hits" : [
+            {
+                "_index" : "twitter",
+                "_type" : "tweet",
+                "_id" : "1",
+                "_score" : 0.19178301,
+                "_source" : {
+                    "user": "christo",
+                    "message" : "love elastic search!"
+                }
+            },
+            {
+                "_index" : "twitter",
+                "_type" : "tweet",
+                "_id" : "2",
+                "_score" : 0.19178301,
+                "_source" : {
+                    "user": "christo",
+                    "message" : "still searching away"
+                }
+            }
+        ]
+    }
+}
+```

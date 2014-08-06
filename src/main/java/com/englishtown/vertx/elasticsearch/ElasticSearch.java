@@ -5,6 +5,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.Requests;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
@@ -20,6 +21,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import javax.inject.Inject;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -112,6 +114,9 @@ public class ElasticSearch extends BusModBase implements Handler<Message<JsonObj
                 case "scroll":
                     doScroll(message);
                     break;
+                case "raw":
+                	doRaw(message);
+                	break;
                 default:
                     sendError(message, "Unrecognized action " + action);
                     break;
@@ -355,7 +360,29 @@ public class ElasticSearch extends BusModBase implements Handler<Message<JsonObj
                 });
 
     }
+    
+    /**
+     * Send raw DSL query
+     * 
+     * @param message
+     */
+    public void doRaw(final Message<JsonObject> message) {
 
+        JsonObject body = message.body();
+
+        // Get index to be searched
+        String index = body.getString(CONST_INDEX);
+        
+        // Get type to be searched
+        String type = body.getString(CONST_TYPE);
+        
+        JsonObject query = body.getObject("query");
+        
+		SearchResponse res = client.search(Requests.searchRequest(index).types(type).source(query.toString())).actionGet();
+
+		handleActionResponse(res, message);    	
+    }
+    
     protected String getRequiredIndex(JsonObject json, Message<JsonObject> message) {
         String index = json.getString(CONST_INDEX);
         if (index == null || index.isEmpty()) {
