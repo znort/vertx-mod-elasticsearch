@@ -475,8 +475,8 @@ public class ElasticSearch extends BusModBase implements Handler<Message<JsonObj
 		JsonObject body = message.body();
 
 		// get template to execute
-		String templateId = body.getObject("template").getString("id");
-		Map<String,Object> params = body.getObject("params").toMap();
+		String templateId = body.getObject("query").getObject("template").getString("id");
+		Map<String,Object> params = body.getObject("query").getObject("params").toMap();
 
 		// convert to Map<String,String>
 		Map<String,String> stringParams = new HashMap<>();
