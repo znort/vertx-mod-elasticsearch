@@ -440,16 +440,20 @@ public class ElasticSearch extends BusModBase implements Handler<Message<JsonObj
 
 		JsonObject body = message.body();
 
+		JsonObject query = body.getObject("query");
+
 		// Get index to be searched
 		String index = body.getString(CONST_INDEX);
 
+		SearchResponse res;
+
 		// Get type to be searched
-		String type = body.getString(CONST_TYPE);
-
-		JsonObject query = body.getObject("query");
-
-		SearchResponse res = client.search(Requests.searchRequest(index).types(type).source(query.toString())).actionGet();
-
+		if (body.containsField(CONST_TYPE)) {
+			String type = body.getString(CONST_TYPE);
+			 res = client.search(Requests.searchRequest(index).types(type).source(query.toString())).actionGet();
+		} else {
+			 res = client.search(Requests.searchRequest(index).source(query.toString())).actionGet();
+		}
 		handleActionResponse(res, message);    	
 	}
 
