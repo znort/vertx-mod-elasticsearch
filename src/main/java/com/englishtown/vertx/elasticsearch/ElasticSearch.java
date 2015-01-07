@@ -463,8 +463,8 @@ public class ElasticSearch extends BusModBase implements Handler<Message<JsonObj
 	 Example:
 
 	 {
-		 "template": {
-	 	"id": "ghs.default"
+	 	"template": {
+	 	"id": "ghs.products.default"
 	 },
 		 "params": {
 			 "query": "fish",
@@ -475,8 +475,13 @@ public class ElasticSearch extends BusModBase implements Handler<Message<JsonObj
 	 }
 	 */
 	public void doTemplateQuery(final Message<JsonObject> message) {
-
+		String index = null;
 		JsonObject body = message.body();
+
+		// query by index if specified
+		if (message.body().containsField(CONST_INDEX)) {
+			index = message.body().getString(CONST_INDEX);
+		}
 
 		// get template to execute
 		String templateId = body.getObject("query").getObject("template").getString("id");
@@ -492,6 +497,7 @@ public class ElasticSearch extends BusModBase implements Handler<Message<JsonObj
 		}
 
 		SearchResponse res = client.prepareSearch()
+				.setIndices(index)
 				.setTemplateName(templateId)
 				.setTemplateType(ScriptService.ScriptType.INDEXED)
 				.setTemplateParams(stringParams)
